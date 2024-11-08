@@ -129,5 +129,55 @@
                 ```
 
 # 네트워크
+    - 도커 컴포즈 구성시 각 컨테이들은 모두 같은 네트워크로 상에 구성되게 조정
+        - 내부 ip로 상호관 연동 가능
+
+    - 기본적으로 3개의 네트워크가 지원
+        - docker network ls
+
+        ```
+            c:\Users\user\Documents\ci_cd_projects\docker>docker network ls
+            NETWORK ID     NAME      DRIVER    SCOPE
+            1c7f63fbf270   bridge    bridge    local
+            9a7d7ee53eb2   host      host      local
+            abc7227300b8   none      null      local
+        
+            - docker container inspect web
+            ```
+                ...
+                "Networks": {
+                    "bridge": {   <= 네트워크 관련 내용
+                        "IPAMConfig": null,
+                        "Links": null,
+                ...
+            ```
+    
+    - 커스텀 생성 
+        - docker network create --driver=bridge web-net
+        - 해당되는 네트워크만 출력
+            - docker network ls --filter driver=bridge
+    
+    - 네트워크를 컨테이너에 연결
+        - 방법
+            - 컨테이너 생성시 지정
+                - docker run .... --net <네트워크명> ...
+            - 컨테이너 생성후 연결
+    
+    - 컨테이너 생성후 연결 테스트
+        - docker network connect [옵션] <네트워크> <컨테이너>
+            - docker network connect web-net web
+        - 네트워크 정보 확인
+            - docker container inspect web
+            - 기존 정보 존재, 신규 네트워크 추가
+        - 연결해제
+            - docker network disconnect bridge web
+            - 정보확인
+                - docker container inspect web
+    - 네트워크 제거
+        - docker network disconnect web-net web
+        - docker container inspect web
+        - docker network rm web-net
+        - 원래 존재하던 네트워크 추가
+            - docker network connect bridge web
 
 # 볼륨
