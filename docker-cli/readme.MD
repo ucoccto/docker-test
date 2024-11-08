@@ -12,7 +12,55 @@
     - docker logout
     - 사용법 알려줘 
         - docker --help
+
 # 이미지
+    - 도커 허브로부터 컨터이너를 생성할수 있는 이미지를 관리(push/pull/rm/build/...)
+    - syntax
+        - docker image 2차명령어 [옵션] 이미지명[:태그명]
+        - 옵션, 태그명(버전표기가 된) 생략가능
+    
+    - 허브에서 해당 이미지를 검색하여 로컬PC(도커 클라이언트가존재하는)에 다운
+        - 아래 명령은 결과가 동일함 태그 생략 => :latest
+        - docker image pull ubuntu
+        - docker image pull ubuntu:latest
+
+    - pull한 이미지 목록 확인
+        - docker image ls
+        - docker image ls -a
+        - 고유 식별값 확인
+            - docker image ls -a --digests
+            - 값을 자르지 말고 있는 그대로 다 보여줘라
+            - docker image ls -a --digests --no-trunc
+
+    - 이미지 상세(inspect) 정보 보기
+        - docker image inspect 이미지[:태그]
+        - docker image inspect ubuntu
+
+    - 도커 허브내 검색 -> 이미지 찾기
+        - docker search [옵션] <키워드>
+        - docker search nginx
+        - 탑 3만 보여줘
+        - docker search nginx --limit 3
+    
+    - 이미지 삭제
+        - docker image rm ubuntu
+    
+    - 이미지 생성
+        - 기존 이미지를 기반으로 생성
+            - 이미지 다운로드 -> nginx 
+                - docker image pull nginx
+            - 생성
+                - docker image tag 이미지명 <도커허브상사용자명=아이디>/커스텀이미지명:버전
+                - docker image tag nginx edu1ucoc/nginx_v:1.0
+
+        - 기존 이미지를 기반으로 컨테이너를 생성 -> 커스텀작업 -> 이미지 생성
+        - 도커 파일을 통해서 생성
+
+    - 이미지 도커 허브에 배포
+        - docker image push <도커허브상사용자명=아이디>/커스텀이미지명:버전
+        - docker image push edu1ucoc/nginx_v:1.0
+
+
 
 # 컨테이너
 
