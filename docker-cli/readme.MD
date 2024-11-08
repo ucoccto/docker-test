@@ -181,3 +181,107 @@
             - docker network connect bridge web
 
 # 볼륨
+    - 컨테이너에서 생성한 파일은 컨테이너가 삭제되면 같이 삭제된다!!
+    - 목표
+        - 컨테이너가 삭제되고, 생성된/작업한 데이터는 유지되길 원한다!!
+        - 호스트 OS와 공유, 컨테이너간 공유
+    - 종류
+        - (*)볼륨 마운트 (도커 엔진내에 저장, 리눅스 경로법 따름)
+        - (*)바인드 마운트 (호스트 OS와 연동, 호스트 OS의 경로법 따름)
+        - 메모리 마운트 (호스트 OS가 리눅스일때만 가능)
+    - 목록 확인
+        - docker volume ls
+    - 사용하지 않는 볼륨 청소(삭제)
+        - docker volume prune
+
+    - 볼륨 마운트 
+        - 볼륨 생성
+            - docker volume create my_vol
+        - 볼륨 삭제
+            - docker volume rm my_vol
+            - docker volume create my_vol
+        - 볼륨 상세 정보
+            - docker volume inspect my_vol
+            ```
+                ...
+                "Mountpoint": "/var/lib/docker/volumes/my_vol/_data", <- 도커 엔진내 경로
+                ...
+            ```
+        
+        - 특징
+            - 컨테이너 만들때 반드시 지정해야 한다. 나중에 추가 x
+            - syntax
+                - docker run ... -v <볼륨명>:<컨테이너 내부 특정경로>:<읽기전용(ro)|읽고쓰기(기본)>
+            - 컨테이너 생성
+                - docker run -itd --name my_ub -v my_vol:/home ubuntu
+                - 컨테이너 접속
+                    - docker exec -it my_ub bash
+                - 컨테이너 상세 정보
+                    - docker container inspect my_ub
+                    ```
+                        ...
+                        "Mounts": [
+                            {
+                                "Type": "volume",
+                                "Name": "my_vol",
+                                "Source": "/var/lib/docker/volumes/my_vol/_data",
+                                "Destination": "/home",
+                                "Driver": "local",
+                                "Mode": "z",
+                                "RW": true,
+                                "Propagation": ""
+                            }
+                        ],
+                        ...
+                    ```
+                - 컨테이너 2개 추가 생성 -> 2분
+                    - my_ub2 : 나머지 구성은 동일하게
+                        - docker run -itd --name my_ub2 -v my_vol:/home ubuntu
+                        ```
+                            # ls /home 
+                                a.txt  ubuntu
+                            # cat /home/a.txt
+                                hi docker
+                            # echo "good" > /home/b.txt
+                            # ls /home
+                                a.txt  b.txt  ubuntu
+                            # 
+                        ```
+                    - my_ub3 : 읽기 전용으로 구성
+                        - docker run -itd --name my_ub3 -v my_vol:/home:ro ubuntu
+                        ```
+                            # ls /home
+                                a.txt  b.txt  ubuntu
+                            # ls /home -al
+                                total 20
+                                drwxr-xr-x 3 root   root   4096 Nov  8 05:26 .
+                                drwxr-xr-x 1 root   root   4096 Nov  8 05:24 ..
+                                -rw-r--r-- 1 root   root     10 Nov  8 05:17 a.txt
+                                -rw-r--r-- 1 root   root      5 Nov  8 05:26 b.txt
+                                drwxr-x--- 2 ubuntu ubuntu 4096 Nov  8 05:15 ubuntu
+                            # echo "maybe" > /home/c.txt
+                                /bin/sh: 3: cannot create /home/c.txt: Read-only file system
+                            # 
+    
+    
+    - 바인드 마운트
+        - 호스트 OS의 특정 경로를 볼륨으로 사용
+        - 형식
+            - .. -v <호스트OS경로>:<..>:<..>
+            - 호스트OS경로 형식
+                - 공유한 특정 폴더에서 진행
+                    - ~/docker/share_vol
+                - ${pwd} or $(pwd)
+                - 터미널 제품에 따라 상이 (bash=>(), powseshell=>{})
+        - 생성
+            - 현재위치 ~/docker/share_vol> 
+            - docker run -itd --name my_ub5 -v ${pwd}:/home ubuntu
+            ```
+                # ehco "14:54" > /home/5.txt
+                    /bin/sh: 1: ehco: not found
+                # echo "14:55" > /home/5.txt
+                # cat /home/5.txt
+                    14:55
+                    금요일
+            ```
+
