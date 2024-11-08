@@ -61,8 +61,72 @@
         - docker image push edu1ucoc/nginx_v:1.0
 
 
-
 # 컨테이너
+    - 개요
+        - 이미지를 기반으로 스냅샷을 생성하면 => 이것이 컨테이너가 된다
+        - 구동/운영이 가능한 상태
+        - 삭제 수행시 컨테이너 내부 모든 데이터는 삭제
+            - 볼륨혹은 cp 명령을 통해서 외부로 백업, 관리 가능함
+            - 볼륨 섹션에서 확인
+
+    - 일반절차
+        - 이미지 pull -> 컨테이너 create -> start -> 사용 -> stop -> rm
+        - steps 
+            - 대상 이미지는 nginx
+            - 이미지 pull
+                - docker image pull nginx
+            - 컨테이너 create
+                - docker container create -p 80:80 --name web nginx
+            - 컨테이너 start
+                - 실행중인 컨테이너 확인
+                    - docker container ps
+                - 가동
+                    - docker container start web
+                    - 브라우저 접속 -> http://localhost
+                    - 가동 확인
+                        - docker container ps 
+                - 명령어에서 컨테이너로 진입하는 input/output 설정 X
+                    - 도커 클라이언트 > 컨테이너 > nginx 클릭 > exec 진입
+                        - 프록시 관련 설정 확인 -> 나중에 도커파일/도커컴포즈에서 조정 예상(nginx<->frontend, nginx<->backend)
+                        ```
+                            # cat /etc/nginx/conf.d/default.conf                             
+                        ```
+
+            - 컨테이너 stop
+                - docker container stop web
+
+            - 컨테이너 로그
+                - docker container logs web
+
+            - 컨테이너 rm
+                - docker container rm web
+
+
+    - 올인원 방식 -> run
+        - 포그라운드 : 터미널이 중단되면 컨테이너 가동도 중단된다
+            - docker container run -it -p 80:80 --name web nginx
+                - -i : 입력단, stdin
+                - -t : 출력단, tty
+                - -p : 호스트에서접근포트:컨테이너내부에서사용
+                - 터미널 중단 => 컨테이너 가동 중단
+                - 다시가동(start) => 입출력이 보이진 않는다(백그라운드)
+                    - 컨테이너 접속
+                        - docker container exec -it web bash
+                        ```
+                            root@d74c73596282:/# 
+                        ```
+        - (*)백드라운드 => -d
+            - docker container run -itd -p 80:80 --name web nginx
+            - 컨테이너 접근 
+                - docker container exec -it web bash
+            - 컨테이너 상세정보(inspect)
+                - docker container inspect web
+                ```
+                    # json 형태로 각종 정보, 이미지, 마운트, 네트워크등등 제공
+                    [
+                        ... 
+                    ]
+                ```
 
 # 네트워크
 
